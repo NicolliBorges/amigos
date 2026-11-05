@@ -1129,10 +1129,47 @@ async function preencherConvidados() {
 
 async function abrirLista(acabouDeConfirmar) {
   $("lista-aviso").hidden = !acabouDeConfirmar;
+  $("aviso-aba").hidden = true;
+  alternarFormAba(false);
   selecionarAba("convidados");
   mostrar("tela-lista");
   await Promise.all([preencherConvidados(), preencherMural()]);
 }
+
+function alternarFormAba(aberto) {
+  $("form-aba").hidden = !aberto;
+  $("nova-mensagem").hidden = aberto;
+  if (aberto) {
+    $("aviso-aba").hidden = true;
+    $("recado-aba").focus();
+  }
+}
+
+$("nova-mensagem").addEventListener("click", () => alternarFormAba(true));
+$("cancelar-aba").addEventListener("click", () => alternarFormAba(false));
+$("form-aba").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const texto = $("recado-aba").value.trim();
+  if (!texto) return;
+  const publica = e.target.elements.visibilidade.value === "publica";
+  const botao = $("enviar-aba");
+  botao.disabled = true;
+  $("erro-aba").hidden = true;
+  try {
+    await salvarMensagem(nomeAtual, texto, publica);
+  } catch {
+    $("erro-aba").textContent = "Sua mensagem não foi enviada. Tente de novo.";
+    $("erro-aba").hidden = false;
+    botao.disabled = false;
+    return;
+  }
+  botao.disabled = false;
+  e.target.reset();
+  alternarFormAba(false);
+  $("aviso-aba").textContent = publica ? "Mensagem publicada!" : "Mensagem enviada em segredo!";
+  $("aviso-aba").hidden = false;
+  await preencherMural();
+});
 
 $("aba-convidados").addEventListener("click", () => selecionarAba("convidados"));
 $("aba-mensagens").addEventListener("click", () => selecionarAba("mensagens"));

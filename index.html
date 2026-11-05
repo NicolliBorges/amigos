@@ -113,6 +113,26 @@
       </div>
       <div id="painel-mensagens" class="painel painel-aba" role="tabpanel" aria-labelledby="aba-mensagens" hidden>
         <p class="aviso" id="modo-teste" hidden>Modo de teste: as mensagens ficam só neste navegador.</p>
+        <button type="button" id="nova-mensagem">DEIXAR UMA MENSAGEM?</button>
+        <p id="aviso-aba" class="lista-aviso aviso-aba" role="status" hidden></p>
+        <form id="form-aba" class="form" hidden>
+          <label for="recado-aba" class="rotulo">SUA MENSAGEM</label>
+          <textarea id="recado-aba" maxlength="280" rows="3" required placeholder="Escreva com carinho"></textarea>
+          <fieldset class="escolha">
+            <legend class="rotulo">QUEM PODE LER?</legend>
+            <label class="opcao">
+              <input type="radio" name="visibilidade" value="privada" checked>
+              <span><strong>PRIVADA</strong> Só quem fez este site lê.</span>
+            </label>
+            <label class="opcao">
+              <input type="radio" name="visibilidade" value="publica">
+              <span><strong>PÚBLICA</strong> Aparece aqui, para todo mundo.</span>
+            </label>
+          </fieldset>
+          <button type="submit" id="enviar-aba">ENVIAR</button>
+          <button type="button" id="cancelar-aba" class="secundario">CANCELAR</button>
+          <p class="aviso" id="erro-aba" role="alert" hidden></p>
+        </form>
         <ul id="mural" class="mural"></ul>
       </div>
       <div class="painel">

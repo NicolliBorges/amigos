@@ -31,6 +31,7 @@
 .aba:active { box-shadow: none; }
 .aba[aria-selected="true"] { background: var(--painel); color: var(--tinta); }
 .painel-aba { flex: 1; }
+.aviso-aba { margin: 0; }
 .ficha .inteiro { grid-column: 1 / -1; }
 .senha { display: flex; flex-direction: column; gap: 6px; }
 .senha-linha { display: flex; gap: 8px; }
