@@ -426,6 +426,20 @@ $("form-nome").addEventListener("submit", async (e) => {
     return;
   }
 
+  // Quem já confirmou volta direto para as listas, sem repetir o caminho.
+  try {
+    const confirmados = await carregarConfirmados();
+    if (confirmados.some((c) => c.chave === chaveDoNome(nome))) {
+      $("cena-bau").hidden = true;
+      $("painel-bau").hidden = true;
+      $("jogador").textContent = nomeAtual;
+      $("revelacao").hidden = false;
+      await montarPresenca($("presenca-amigos"));
+      await abrirLista(false);
+      return;
+    }
+  } catch { /* sem a lista, segue o caminho normal */ }
+
   montarTurma($("turma-amigos"));
   mostrar("tela-amigos");
   await conversar($("balao-amigos"), $("prox-amigos"), [
@@ -500,13 +514,13 @@ async function preencherMural() {
   }
 }
 
-async function abrirBau(publica) {
+async function abrirBau(fala) {
   const bauFechado = createBauEl(false);
   montarTurma($("turma-convite"), bauFechado);
   mostrar("tela-convite");
   const botao = $("prox-convite");
   await conversar($("balao-convite"), botao, [
-    publica ? "Prontinho, seu recado já está no mural!" : "Prontinho! Seu recado fica só entre nós.",
+    fala,
     "Agora, a surpresa. Ela estava trancada neste baú...",
     "...e a chave sempre foi sua. Vai lá!",
   ]);
@@ -549,8 +563,10 @@ $("form-recado").addEventListener("submit", async (e) => {
   }
   $("recado").value = "";
   botao.disabled = false;
-  abrirBau(publica);
+  abrirBau(publica ? "Prontinho, seu recado já está no mural!" : "Prontinho! Seu recado fica só entre nós.");
 });
+
+$("pular-recado").addEventListener("click", () => abrirBau("Sem problema, fica para depois!"));
 
 /* ---------- Filme ---------- */
 
