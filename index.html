@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Amigos</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jersey+15&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game">
+
+    <!-- ENTRADA -->
+    <section id="tela-entrada" class="tela">
+      <div class="palco">
+        <div class="estrelas" aria-hidden="true"></div>
+        <div id="capa" class="capa">
+          <p class="capa-topo">UM JOGO MUITO CURTO</p>
+          <h1>AMIGOS</h1>
+          <p class="capa-sub">Só para quem foi chamado.</p>
+        </div>
+        <div id="balao-entrada" class="balao" role="status" hidden></div>
+        <div class="turma" id="turma-entrada" aria-hidden="true"></div>
+        <div class="chao" aria-hidden="true"></div>
+      </div>
+      <div class="painel">
+        <button type="button" id="start" class="pulsa">START</button>
+        <button type="button" id="prox-entrada" hidden>CONTINUAR</button>
+        <form id="form-nome" class="form" autocomplete="off" hidden>
+          <label for="nome" class="rotulo">JOGADOR 1</label>
+          <input id="nome" maxlength="30" required placeholder="Digite seu nome" autocomplete="off">
+          <button type="submit">ENTRAR</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- AMIGOS -->
+    <section id="tela-amigos" class="tela" hidden>
+      <div class="palco">
+        <div class="estrelas" aria-hidden="true"></div>
+        <div id="balao-amigos" class="balao" role="status"></div>
+        <div class="turma" id="turma-amigos" aria-hidden="true"></div>
+        <div class="chao" aria-hidden="true"></div>
+      </div>
+      <div class="painel">
+        <button type="button" id="prox-amigos">CONTINUAR</button>
+        <form id="form-recado" class="form" hidden>
+          <label for="recado" class="rotulo">SEU RECADINHO</label>
+          <textarea id="recado" maxlength="280" rows="3" required placeholder="Escreva com carinho"></textarea>
+          <fieldset class="escolha">
+            <legend class="rotulo">QUEM PODE LER?</legend>
+            <label class="opcao">
+              <input type="radio" name="visibilidade" value="privada" checked>
+              <span><strong>PRIVADA</strong> Só quem fez este site lê.</span>
+            </label>
+            <label class="opcao">
+              <input type="radio" name="visibilidade" value="publica">
+              <span><strong>PÚBLICA</strong> Aparece no mural, para todo mundo.</span>
+            </label>
+          </fieldset>
+          <button type="submit" id="enviar">ENVIAR</button>
+          <p class="aviso" id="erro-recado" role="alert" hidden></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- BAÚ E CONVITE -->
+    <section id="tela-convite" class="tela" hidden>
+      <div id="cena-bau" class="palco">
+        <div class="estrelas" aria-hidden="true"></div>
+        <div id="balao-convite" class="balao" role="status"></div>
+        <div class="turma" id="turma-convite" aria-hidden="true"></div>
+        <div class="chao" aria-hidden="true"></div>
+      </div>
+      <div id="painel-bau" class="painel">
+        <button type="button" id="prox-convite">CONTINUAR</button>
+      </div>
+
+      <div id="revelacao" hidden>
+        <div class="convite">
+          <p class="selo">★ FASE SECRETA DESBLOQUEADA ★</p>
+          <article class="ingresso">
+            <p class="ingresso-topo">CONVITE PARA UM JOGADOR</p>
+            <div id="controle" aria-hidden="true"></div>
+            <h1>NOITE DE JOGOS</h1>
+            <p class="data">SEXTA, 04/12</p>
+            <dl class="ficha">
+              <div><dt>JOGADOR</dt><dd id="jogador"></dd></div>
+              <div><dt>HORÁRIO</dt><dd>20:00</dd></div>
+              <div class="inteiro"><dt>LOCAL</dt><dd class="js-local"></dd></div>
+            </dl>
+          </article>
+        </div>
+        <div id="presenca-amigos" class="painel"></div>
+        <div class="painel">
+          <h2 class="rotulo">MURAL DE CARINHO</h2>
+          <p class="aviso" id="modo-teste" hidden>Modo de teste: as mensagens ficam só neste navegador.</p>
+          <ul id="mural" class="mural"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAME OVER -->
+    <section id="tela-fora" class="tela tela-fora" hidden>
+      <div class="palco palco-fora">
+        <p class="game-over">GAME OVER</p>
+        <div id="dedo" class="dedo" role="img" aria-label="Mão em pixel art mostrando o dedo do meio"></div>
+      </div>
+      <div class="painel painel-fora">
+        <h1 id="recado-fora"></h1>
+        <button type="button" id="abrir-filme">TEM MAIS UMA COISA</button>
+        <button type="button" id="voltar" class="secundario">CONTINUE? NÃO.</button>
+      </div>
+    </section>
+
+    <!-- FILME -->
+    <section id="tela-filme" class="tela tela-filme" hidden>
+      <canvas id="filme" width="120" height="110" role="img" aria-label="Filminho em pixel art: uma pessoa chega com um anel, se ajoelha, recebe um sim e as duas vão embora de mãos dadas."></canvas>
+      <p id="legenda" class="legenda" aria-live="polite"></p>
+      <div class="painel painel-fora">
+        <button type="button" id="pular" class="secundario">PULAR</button>
+        <button type="button" id="abrir-especial" hidden>ABRIR O ENVELOPE</button>
+        <button type="button" id="rever" class="secundario" hidden>VER DE NOVO</button>
+      </div>
+    </section>
+
+    <!-- CONVITE ESPECIAL -->
+    <section id="tela-especial" class="tela tela-especial" hidden>
+      <div class="especial">
+        <div id="chuva" class="chuva" aria-hidden="true"></div>
+        <p class="selo">ISSO NÃO É SONHO</p>
+        <article class="ingresso ingresso-especial">
+          <p class="ingresso-topo">CONVITE MUITO ESPECIAL</p>
+          <div id="casal" aria-hidden="true"></div>
+          <p class="nota">Acordei, mas este convite é de verdade. Vem jogar comigo?</p>
+          <h1>NOITE DE JOGOS</h1>
+          <p class="data">SEXTA, 04/12</p>
+          <dl class="ficha">
+            <div><dt>PLAYER 2</dt><dd id="player2"></dd></div>
+            <div><dt>HORÁRIO</dt><dd>20:00</dd></div>
+            <div class="inteiro"><dt>LOCAL</dt><dd class="js-local"></dd></div>
+          </dl>
+        </article>
+      </div>
+      <div id="presenca-especial" class="painel"></div>
+      <div class="painel">
+        <button type="button" id="rever-especial" class="secundario">VER O FILME DE NOVO</button>
+      </div>
+    </section>
+
+  </main>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
