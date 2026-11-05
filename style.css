@@ -21,6 +21,9 @@
 
 #revelacao { display: flex; flex: 1; flex-direction: column; }
 #revelacao .painel:last-child, .tela-especial .painel:last-child { flex: 1; }
+.legenda { flex: none !important; }
+.musica { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 8px; padding: 0 16px 16px; background: #000; color: #fff; font-size: 18px; text-align: center; }
+.musica p { margin: 0; }
 .ficha .inteiro { grid-column: 1 / -1; }
 .senha { display: flex; flex-direction: column; gap: 6px; }
 .senha-linha { display: flex; gap: 8px; }

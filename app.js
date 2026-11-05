@@ -421,6 +421,7 @@ $("form-nome").addEventListener("submit", async (e) => {
 
   if ((await sha256(normalizar(nome))) === HASH_FORA) {
     $("recado-fora").textContent = "NÃO SOMOS AMIGAS";
+    prepararMusica();
     mostrar("tela-fora");
     return;
   }
@@ -961,6 +962,52 @@ function quadroFilme(ctx, t) {
   }
 }
 
+/* ---------- Música (player oficial do YouTube) ---------- */
+
+const VIDEOS_MUSICA = ["-BjZmE2gtdo", "uLL2xTK35Qc"];
+let player = null;
+let playerPronto = false;
+let querTocar = false;
+let videoAtual = 0;
+
+function prepararMusica() {
+  if (document.getElementById("yt-api")) return;
+  window.onYouTubeIframeAPIReady = () => {
+    player = new window.YT.Player("player", {
+      width: 200,
+      height: 200,
+      videoId: VIDEOS_MUSICA[0],
+      playerVars: { playsinline: 1, rel: 0 },
+      events: {
+        onReady: () => {
+          playerPronto = true;
+          if (querTocar) player.playVideo();
+        },
+        onError: () => {
+          videoAtual += 1;
+          if (videoAtual < VIDEOS_MUSICA.length) player.loadVideoById(VIDEOS_MUSICA[videoAtual]);
+        },
+      },
+    });
+  };
+  const s = document.createElement("script");
+  s.id = "yt-api";
+  s.src = "https://www.youtube.com/iframe_api";
+  document.head.append(s);
+}
+
+function tocarMusica() {
+  querTocar = true;
+  if (!playerPronto) return;
+  player.seekTo(0, true);
+  player.playVideo();
+}
+
+function pausarMusica() {
+  querTocar = false;
+  if (playerPronto) player.pauseVideo();
+}
+
 let quadroAtual = null;
 
 function pararFilme() {
@@ -980,6 +1027,7 @@ function encerrarFilme(ctx) {
 function tocarFilme() {
   pararFilme();
   mostrar("tela-filme");
+  tocarMusica();
   $("pular").hidden = false;
   $("rever").hidden = true;
   $("abrir-especial").hidden = true;
@@ -1010,6 +1058,7 @@ $("pular").addEventListener("click", () => encerrarFilme($("filme").getContext("
 $("rever-especial").addEventListener("click", tocarFilme);
 $("abrir-especial").addEventListener("click", () => {
   pararFilme();
+  pausarMusica();
   mostrar("tela-especial");
   $("player2").textContent = nomeAtual;
   montarPresenca($("presenca-especial"));
