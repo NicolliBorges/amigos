@@ -412,17 +412,41 @@ $("start").addEventListener("click", async () => {
   $("nome").focus({ preventScroll: true });
 });
 
-$("form-nome").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const nome = $("nome").value.trim().replace(/\s+/g, " ");
-  if (!nome) return;
+/* Memória do aparelho: quem volta continua de onde parou. */
+const CHAVE_JOGADOR = "amigos-jogador";
+
+function lerJogador() {
+  try { return JSON.parse(localStorage.getItem(CHAVE_JOGADOR)) || {}; } catch { return {}; }
+}
+
+function salvarJogador(dados) {
+  try { localStorage.setItem(CHAVE_JOGADOR, JSON.stringify({ ...lerJogador(), ...dados })); } catch { /* segue sem lembrar */ }
+}
+
+function esquecerJogador() {
+  try { localStorage.removeItem(CHAVE_JOGADOR); } catch { /* nada a limpar */ }
+}
+
+async function abrirConviteDireto() {
+  $("cena-bau").hidden = true;
+  $("painel-bau").hidden = true;
+  $("jogador").textContent = nomeAtual;
+  $("revelacao").hidden = false;
+  await montarPresenca($("presenca-amigos"));
+  mostrar("tela-convite");
+}
+
+async function entrarComo(nome) {
   nomeAtual = nome;
   primeiroNome = nome.split(" ")[0];
+  salvarJogador({ nome });
+  const memoria = lerJogador();
 
   if ((await sha256(normalizar(nome))) === HASH_FORA) {
     $("recado-fora").textContent = "NÃO SOMOS AMIGAS";
     prepararMusica();
-    mostrar("tela-fora");
+    if (memoria.viuFilme) await abrirEspecial();
+    else mostrar("tela-fora");
     return;
   }
 
@@ -430,15 +454,16 @@ $("form-nome").addEventListener("submit", async (e) => {
   try {
     const confirmados = await carregarConfirmados();
     if (confirmados.some((c) => c.chave === chaveDoNome(nome))) {
-      $("cena-bau").hidden = true;
-      $("painel-bau").hidden = true;
-      $("jogador").textContent = nomeAtual;
-      $("revelacao").hidden = false;
-      await montarPresenca($("presenca-amigos"));
+      await abrirConviteDireto();
       await abrirLista(false);
       return;
     }
   } catch { /* sem a lista, segue o caminho normal */ }
+
+  if (memoria.recado || memoria.convite) {
+    await abrirConviteDireto();
+    return;
+  }
 
   montarTurma($("turma-amigos"));
   mostrar("tela-amigos");
@@ -450,9 +475,22 @@ $("form-nome").addEventListener("submit", async (e) => {
   $("prox-amigos").hidden = true;
   $("form-recado").hidden = false;
   $("recado").focus({ preventScroll: true });
+}
+
+$("form-nome").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const nome = $("nome").value.trim().replace(/\s+/g, " ");
+  if (nome) entrarComo(nome);
+});
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".trocar")) return;
+  esquecerJogador();
+  location.reload();
 });
 
 $("voltar").addEventListener("click", () => {
+  esquecerJogador();
   $("nome").value = "";
   mostrar("tela-entrada");
 });
@@ -534,6 +572,7 @@ async function abrirBau(fala) {
   $("painel-bau").hidden = true;
   $("jogador").textContent = nomeAtual;
   $("revelacao").hidden = false;
+  salvarJogador({ convite: true });
   scrollTo(0, 0);
   await montarPresenca($("presenca-amigos"));
 }
@@ -563,6 +602,7 @@ $("form-recado").addEventListener("submit", async (e) => {
   }
   $("recado").value = "";
   botao.disabled = false;
+  salvarJogador({ recado: true });
   abrirBau(publica ? "Prontinho, seu recado já está no mural!" : "Prontinho! Seu recado fica só entre nós.");
 });
 
@@ -1072,12 +1112,17 @@ $("abrir-filme").addEventListener("click", tocarFilme);
 $("rever").addEventListener("click", tocarFilme);
 $("pular").addEventListener("click", () => encerrarFilme($("filme").getContext("2d")));
 $("rever-especial").addEventListener("click", tocarFilme);
+async function abrirEspecial() {
+  mostrar("tela-especial");
+  $("player2").textContent = nomeAtual;
+  await montarPresenca($("presenca-especial"));
+}
+
 $("abrir-especial").addEventListener("click", () => {
   pararFilme();
   pausarMusica();
-  mostrar("tela-especial");
-  $("player2").textContent = nomeAtual;
-  montarPresenca($("presenca-especial"));
+  salvarJogador({ viuFilme: true });
+  abrirEspecial();
 });
 
 /* ---------- Presença ---------- */
@@ -1208,7 +1253,11 @@ async function montarPresenca(alvo) {
   ver.type = "button";
   ver.className = "secundario ver-lista";
   ver.textContent = "VER CONVIDADOS E MENSAGENS";
-  alvo.replaceChildren(botao, erro, ver);
+  const trocar = document.createElement("button");
+  trocar.type = "button";
+  trocar.className = "secundario trocar";
+  trocar.textContent = "TROCAR DE JOGADOR";
+  alvo.replaceChildren(botao, erro, ver, trocar);
 
   const marcarConfirmado = () => {
     botao.textContent = "PRESENÇA CONFIRMADA. ATÉ LÁ!";
@@ -1268,6 +1317,11 @@ async function abrirLocal(senha) {
 }
 
 document.querySelectorAll(".js-local").forEach((alvo, i) => {
+  const localSalvo = lerJogador().local;
+  if (localSalvo) {
+    alvo.textContent = localSalvo;
+    return;
+  }
   const form = document.createElement("form");
   form.className = "senha";
   const rotulo = document.createElement("label");
@@ -1293,7 +1347,9 @@ document.querySelectorAll(".js-local").forEach((alvo, i) => {
     botao.disabled = true;
     erro.hidden = true;
     try {
-      alvo.textContent = await abrirLocal(campo.value.trim().toLowerCase());
+      const local = await abrirLocal(campo.value.trim().toLowerCase());
+      alvo.textContent = local;
+      salvarJogador({ local });
     } catch {
       erro.textContent = "Senha incorreta. Tente de novo.";
       erro.hidden = false;
@@ -1323,5 +1379,12 @@ for (let i = 0; i < 10; i += 1) {
 }
 
 montarTurma($("turma-entrada"));
+
+const jogadorSalvo = lerJogador().nome;
+if (jogadorSalvo) {
+  $("tela-entrada").hidden = true;
+  entrarComo(jogadorSalvo);
+}
+
 $("dedo").append(linhasParaCanvas(MAO, { K: TINTA, S: "#f2c29b", D: "#d99f75", N: "#ffe6d6", C: "#c1121f" }, 11));
 $("controle").append(linhasParaCanvas(CONTROLE, { K: TINTA, G: "#9aa0b5", W: "#ffffff", R: "#ff5c8a" }, 6));
