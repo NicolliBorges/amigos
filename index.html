@@ -96,11 +96,27 @@
           </article>
         </div>
         <div id="presenca-amigos" class="painel"></div>
-        <div class="painel">
-          <h2 class="rotulo">MURAL DE CARINHO</h2>
-          <p class="aviso" id="modo-teste" hidden>Modo de teste: as mensagens ficam só neste navegador.</p>
-          <ul id="mural" class="mural"></ul>
-        </div>
+      </div>
+    </section>
+
+    <!-- CONVIDADOS E MENSAGENS -->
+    <section id="tela-lista" class="tela tela-lista" hidden>
+      <h1 class="lista-titulo">NOITE DE JOGOS</h1>
+      <p id="lista-aviso" class="lista-aviso" role="status" hidden>Presença confirmada. Até lá!</p>
+      <div class="abas" role="tablist" aria-label="Convidados e mensagens">
+        <button type="button" id="aba-convidados" class="aba" role="tab" aria-controls="painel-convidados">CONVIDADOS</button>
+        <button type="button" id="aba-mensagens" class="aba" role="tab" aria-controls="painel-mensagens">MENSAGENS</button>
+      </div>
+      <div id="painel-convidados" class="painel painel-aba" role="tabpanel" aria-labelledby="aba-convidados">
+        <p class="aviso" id="teste-convidados" hidden>Modo de teste: a lista fica só neste navegador.</p>
+        <ul id="lista-convidados" class="mural"></ul>
+      </div>
+      <div id="painel-mensagens" class="painel painel-aba" role="tabpanel" aria-labelledby="aba-mensagens" hidden>
+        <p class="aviso" id="modo-teste" hidden>Modo de teste: as mensagens ficam só neste navegador.</p>
+        <ul id="mural" class="mural"></ul>
+      </div>
+      <div class="painel">
+        <button type="button" id="voltar-convite" class="secundario">VOLTAR AO CONVITE</button>
       </div>
     </section>
 

@@ -20,10 +20,17 @@
 [hidden] { display: none !important; }
 
 #revelacao { display: flex; flex: 1; flex-direction: column; }
-#revelacao .painel:last-child, .tela-especial .painel:last-child { flex: 1; }
+#revelacao .painel:last-child { flex: 1; }
 .legenda { flex: none !important; }
 .musica { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 8px; padding: 0 16px 16px; background: #000; color: #fff; font-size: 18px; text-align: center; }
 .musica p { margin: 0; }
+.lista-titulo { margin: 0; padding: 24px 16px 12px; color: #fff; font-family: var(--titulo); font-size: 44px; font-weight: 400; line-height: 1; text-align: center; }
+.lista-aviso { margin: 0 16px 12px; padding: 10px; background: var(--grama); border: var(--borda) solid var(--tinta); color: var(--tinta); text-align: center; }
+.abas { display: flex; gap: 4px; padding: 0 16px; }
+.aba { flex: 1; min-width: 0; background: var(--ceu-claro); box-shadow: none; color: #fff; font-size: 22px !important; }
+.aba:active { box-shadow: none; }
+.aba[aria-selected="true"] { background: var(--painel); color: var(--tinta); }
+.painel-aba { flex: 1; }
 .ficha .inteiro { grid-column: 1 / -1; }
 .senha { display: flex; flex-direction: column; gap: 6px; }
 .senha-linha { display: flex; gap: 8px; }

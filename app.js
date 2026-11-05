@@ -521,7 +521,7 @@ async function abrirBau(publica) {
   $("jogador").textContent = nomeAtual;
   $("revelacao").hidden = false;
   scrollTo(0, 0);
-  await Promise.all([preencherMural(), montarPresenca($("presenca-amigos"))]);
+  await montarPresenca($("presenca-amigos"));
 }
 
 function createBauEl(aberto) {
@@ -1100,7 +1100,49 @@ async function confirmarPresenca(nome) {
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
 }
 
+let telaDoConvite = "tela-convite";
+let aoVoltarDaLista = () => {};
+
+function selecionarAba(aba) {
+  [["convidados", "painel-convidados"], ["mensagens", "painel-mensagens"]].forEach(([nome, painel]) => {
+    const ativa = nome === aba;
+    $(`aba-${nome}`).setAttribute("aria-selected", String(ativa));
+    $(painel).hidden = !ativa;
+  });
+}
+
+async function preencherConvidados() {
+  $("teste-convidados").hidden = TEM_BANCO;
+  const lista = $("lista-convidados");
+  const aba = $("aba-convidados");
+  try {
+    const confirmados = await carregarConfirmados();
+    aba.textContent = `CONVIDADOS (${confirmados.length})`;
+    lista.replaceChildren(...(confirmados.length
+      ? confirmados.map((c) => itemMural(c.nome))
+      : [itemMural("Ninguém confirmou ainda. Seja a primeira pessoa!")]));
+  } catch {
+    aba.textContent = "CONVIDADOS";
+    lista.replaceChildren(itemMural("Não deu para carregar a lista agora. Tente de novo mais tarde."));
+  }
+}
+
+async function abrirLista(acabouDeConfirmar) {
+  $("lista-aviso").hidden = !acabouDeConfirmar;
+  selecionarAba("convidados");
+  mostrar("tela-lista");
+  await Promise.all([preencherConvidados(), preencherMural()]);
+}
+
+$("aba-convidados").addEventListener("click", () => selecionarAba("convidados"));
+$("aba-mensagens").addEventListener("click", () => selecionarAba("mensagens"));
+$("voltar-convite").addEventListener("click", () => {
+  mostrar(telaDoConvite);
+  aoVoltarDaLista();
+});
+
 async function montarPresenca(alvo) {
+  telaDoConvite = alvo.closest(".tela").id;
   const botao = document.createElement("button");
   botao.type = "button";
   botao.className = "confirmar";
@@ -1109,36 +1151,27 @@ async function montarPresenca(alvo) {
   erro.className = "aviso";
   erro.setAttribute("role", "alert");
   erro.hidden = true;
-  const titulo = document.createElement("h2");
-  titulo.className = "rotulo";
-  titulo.textContent = "QUEM JÁ CONFIRMOU";
-  const lista = document.createElement("ul");
-  lista.className = "mural";
-  alvo.replaceChildren(botao, erro, titulo);
-  if (!TEM_BANCO) {
-    const teste = document.createElement("p");
-    teste.className = "aviso";
-    teste.textContent = "Modo de teste: a lista fica só neste navegador.";
-    alvo.append(teste);
-  }
-  alvo.append(lista);
+  const ver = document.createElement("button");
+  ver.type = "button";
+  ver.className = "secundario ver-lista";
+  ver.textContent = "VER CONVIDADOS E MENSAGENS";
+  alvo.replaceChildren(botao, erro, ver);
+
+  const marcarConfirmado = () => {
+    botao.textContent = "PRESENÇA CONFIRMADA. ATÉ LÁ!";
+    botao.disabled = true;
+    botao.classList.add("confirmado");
+  };
 
   const atualizar = async () => {
     try {
       const confirmados = await carregarConfirmados();
-      lista.replaceChildren(...(confirmados.length
-        ? confirmados.map((c) => itemMural(c.nome))
-        : [itemMural("Ninguém confirmou ainda. Seja a primeira pessoa!")]));
-      if (confirmados.some((c) => c.chave === chaveDoNome(nomeAtual))) {
-        botao.textContent = "PRESENÇA CONFIRMADA. ATÉ LÁ!";
-        botao.disabled = true;
-        botao.classList.add("confirmado");
-      }
-    } catch {
-      lista.replaceChildren(itemMural("Não deu para carregar a lista agora. Tente de novo mais tarde."));
-    }
+      if (confirmados.some((c) => c.chave === chaveDoNome(nomeAtual))) marcarConfirmado();
+    } catch { /* o botão continua disponível para tentar confirmar */ }
   };
+  aoVoltarDaLista = atualizar;
 
+  ver.addEventListener("click", () => abrirLista(false));
   botao.addEventListener("click", async () => {
     botao.disabled = true;
     erro.hidden = true;
@@ -1150,7 +1183,8 @@ async function montarPresenca(alvo) {
       botao.disabled = false;
       return;
     }
-    await atualizar();
+    marcarConfirmado();
+    await abrirLista(true);
   });
 
   await atualizar();
