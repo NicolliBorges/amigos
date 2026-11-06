@@ -38,3 +38,23 @@ create policy "presenca_ler" on public.confirmados
 drop policy if exists "presenca_confirmar" on public.confirmados;
 create policy "presenca_confirmar" on public.confirmados
   for insert to anon with check (true);
+
+-- Página da dona (caixa.html): só devolve as privadas para quem tem a chave do link.
+-- Aqui fica apenas a impressão digital (SHA-256) da chave, nunca a chave.
+create or replace function public.mensagens_privadas(chave text)
+returns table (id bigint, nome text, texto text, criado_em timestamptz)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select m.id, m.nome, m.texto, m.criado_em
+  from public.mensagens m
+  where m.publica = false
+    and sha256(convert_to(chave, 'UTF8')) =
+        '\xd3be698004544c7b50141bd49d86af5a6f4a1fe3cc2466f2e440a3fb5738d0e6'::bytea
+  order by m.criado_em desc;
+$$;
+
+revoke all on function public.mensagens_privadas(text) from public;
+grant execute on function public.mensagens_privadas(text) to anon;

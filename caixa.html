@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Caixa Secreta</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jersey+15&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .caixa { max-width: 560px; margin: 0 auto; padding: 0 16px 32px; }
+    .caixa .lista-titulo { padding-left: 0; padding-right: 0; }
+    .caixa-sub { margin: 0 0 16px; color: var(--destaque); text-align: center; font-family: var(--texto); font-size: 22px; }
+    .caixa .mural li { font-family: var(--texto); font-size: 22px; line-height: 1.15; }
+    .caixa .quando { display: block; margin-top: 6px; color: #6b6275; font-size: 18px; }
+    .caixa-estado { padding: 12px; background: var(--painel); border: var(--borda) solid var(--tinta); color: var(--tinta); font-family: var(--texto); font-size: 22px; text-align: center; }
+    #atualizar { display: block; width: 100%; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <main class="caixa">
+    <h1 class="lista-titulo">CAIXA SECRETA</h1>
+    <p class="caixa-sub" id="contagem">Mensagens privadas</p>
+    <p class="caixa-estado" id="estado" role="status">Abrindo a caixa...</p>
+    <ul id="lista" class="mural"></ul>
+    <button type="button" id="atualizar" hidden>ATUALIZAR</button>
+  </main>
+  <script src="config.js"></script>
+  <script>
+    (function () {
+      var chave = decodeURIComponent(location.hash.slice(1));
+      var estado = document.getElementById("estado");
+      var lista = document.getElementById("lista");
+      var contagem = document.getElementById("contagem");
+      var botao = document.getElementById("atualizar");
+      var cfg = window.AMIGOS_CONFIG || window.CONFIG || {};
+      var url = cfg.SUPABASE_URL;
+      var anon = cfg.SUPABASE_ANON_KEY;
+
+      function avisar(texto) { estado.textContent = texto; estado.hidden = false; }
+
+      function quando(iso) {
+        return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+      }
+
+      function carregar() {
+        if (!chave) { avisar("Esta caixa só abre pelo link secreto."); return; }
+        if (!url || !anon) { avisar("Configuração do site não encontrada."); return; }
+        avisar("Abrindo a caixa...");
+        fetch(url + "/rest/v1/rpc/mensagens_privadas", {
+          method: "POST",
+          headers: { apikey: anon, Authorization: "Bearer " + anon, "Content-Type": "application/json" },
+          body: JSON.stringify({ chave: chave }),
+          cache: "no-store"
+        })
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+          .then(function (itens) {
+            lista.textContent = "";
+            botao.hidden = false;
+            if (!itens.length) {
+              contagem.textContent = "Mensagens privadas";
+              avisar("Nada por aqui. Se você esperava mensagens, confira se o link está completo.");
+              return;
+            }
+            estado.hidden = true;
+            contagem.textContent = itens.length + (itens.length === 1 ? " mensagem privada" : " mensagens privadas");
+            itens.forEach(function (m) {
+              var li = document.createElement("li");
+              var nome = document.createElement("strong");
+              var texto = document.createElement("span");
+              var data = document.createElement("span");
+              nome.textContent = m.nome;
+              texto.textContent = m.texto;
+              data.className = "quando";
+              data.textContent = quando(m.criado_em);
+              li.append(nome, texto, data);
+              lista.append(li);
+            });
+          })
+          .catch(function () { botao.hidden = false; avisar("Não consegui abrir a caixa agora. Tente atualizar."); });
+      }
+
+      botao.addEventListener("click", carregar);
+      carregar();
+    })();
+  </script>
+</body>
+</html>
